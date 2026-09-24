@@ -1,53 +1,73 @@
-from smartsim.log import get_logger
-
 from smartsim import Experiment
-
+from smartsim.log import get_logger
 from smartsim.settings import MpirunSettings
-from smartsim.settings.settings import create_batch_settings
 
 
 logger = get_logger(__name__)
 
 
-def init_smartsim(smartsim_launcher = "local"):
+class SOD2DLauncher:
 
-    logger.info("Starting SmartSim...")
+    def __init__(self,
+        smartsim_launcher="local",
+        experiment_name="sod2d_exp",
+        sod_exe="sod2d",
+        n_tasks_per_env=1,
+        sod_JSON="BluffBodySolverIncompAFC_pedri",
+        N_CFDs=1,
+        control_parameters=None,
+        cwd="./",
+    ):
 
-    # List of launchers implemented/tested
-    launchers = ["local", "slurm"]
-    if smartsim_launcher not in launchers:
-        raise ValueError(f"Launcher type '{smartsim_launcher}' not implemented. Please use one of these: {launchers}")
+        logger.info("Starting SmartSim...")
 
-    # Generate Sod2D experiment
-    exp = Experiment("sod2d_exp", launcher=smartsim_launcher)
+        if control_parameters is None:
+            control_parameters = [0.0, 0.0, 0.0]
 
-    return exp
+        # Store configuration
+        self.sod_exe = sod_exe
+        self.n_tasks_per_env = n_tasks_per_env
+        self.sod_JSON = sod_JSON
+        self.N_CFDs = N_CFDs
+        self.control_parameters = control_parameters
+        self.cwd = cwd
+
+        # List of launchers implemented/tested
+        launchers = ["local", "slurm"]
+        if smartsim_launcher not in launchers:
+            raise ValueError(f"Launcher type '{smartsim_launcher}' not implemented. Please use one of these: {launchers}")
+
+        # Generate SmartSim experiment
+        self.smartsim_experiment = Experiment(experiment_name, launcher=smartsim_launcher)
 
 
-def _generate_mpmd_settings(N_CFDs, control_parameters, sod_exe, n_tasks_per_env, sod_JSON):
-    # Set SOD2D exe arguments
-    logger.info("Preparing execution arguments...")
+    def _create_mpmd_ensemble(self):
 
-    for i in range(N_CFDs):
-            control_parameters_str = ",".join(str(v) for v in control_parameters)
+        for i in range(self.N_CFDs):
 
-            sod_args = {"N_control_parameters": len(control_parameters), "control_parameters": control_parameters_str}
-            exe_args = [sod_JSON] + [f"--{k}={v}" for k,v in sod_args.items()]
+            # Set execution arguments
+            control_parameters_str = ",".join(str(v) for v in self.control_parameters)
+            sod_args = {"N_control_parameters": len(self.control_parameters), "control_parameters": control_parameters_str}
+            exe_args = [self.sod_JSON, *[f"--{k}={v}" for k, v in sod_args.items()]]
 
             logger.info(f"Exe arguments: {exe_args}")
 
-            run = MpirunSettings(exe=sod_exe, exe_args=exe_args)
-            run.set_tasks(n_tasks_per_env)
+            # Set smartsim execution settings
+            run = MpirunSettings(exe=self.sod_exe, exe_args=exe_args,)
+            run.set_tasks(self.n_tasks_per_env)
+
             if i == 0:
                 f_mpmd = run
             else:
                 f_mpmd.make_mpmd(run)
-    return f_mpmd
+
+        return self.smartsim_experiment.create_model("ensemble", f_mpmd, batch_settings=None, path=self.cwd)
 
 
-def create_mpmd_ensemble(exp, N_CFDs, control_parameters, sod_exe, n_tasks_per_env, sod_JSON, cwd):
+    def start(self, block=False):
 
-    f_mpmd = _generate_mpmd_settings(N_CFDs, control_parameters, sod_exe, n_tasks_per_env, sod_JSON)
-    batch_settings = None
+        logger.info("Preparing ensemble of executions...")
+        ensemble = self._create_mpmd_ensemble()
 
-    return exp.create_model("ensemble", f_mpmd, batch_settings=batch_settings, path=cwd)
+        logger.info("Launching simulations...")
+        self.smartsim_experiment.start(ensemble, block=block)
