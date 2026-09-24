@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pedri"
+version = "0.1.0"
+dependencies = [
+    "smartsim"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

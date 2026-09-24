@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+src/pedri/__init__.py
+src/pedri/launcher.py
+src/pedri.egg-info/PKG-INFO
+src/pedri.egg-info/SOURCES.txt
+src/pedri.egg-info/dependency_links.txt
+src/pedri.egg-info/requires.txt
+src/pedri.egg-info/top_level.txt
