@@ -64,7 +64,8 @@ class SOD2DLauncher:
         return self.smartsim_experiment.create_model("ensemble", f_mpmd, batch_settings=None, path=self.cwd)
 
 
-    def start(self, block=False):
+    def start(self, block=True):
+        # block=True keeps the Python process waiting until the simulations finish
 
         logger.info("Preparing ensemble of executions...")
         ensemble = self._create_mpmd_ensemble()

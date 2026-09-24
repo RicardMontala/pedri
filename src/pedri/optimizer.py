@@ -1,0 +1,13 @@
+class BayesianOptimizer:
+
+    def __init__(self, ...):
+        ...
+
+    def ask(self):
+        ...
+
+    def tell(self, parameters, results):
+        ...
+
+    def converged(self):
+        ...
