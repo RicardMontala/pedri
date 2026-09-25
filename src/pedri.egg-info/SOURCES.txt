@@ -3,6 +3,8 @@ README.md
 pyproject.toml
 src/pedri/__init__.py
 src/pedri/launcher.py
+src/pedri/optimizer.py
+src/pedri/postprocessor.py
 src/pedri.egg-info/PKG-INFO
 src/pedri.egg-info/SOURCES.txt
 src/pedri.egg-info/dependency_links.txt
