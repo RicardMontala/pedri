@@ -54,8 +54,11 @@ class BayesianOptimizer:
         '''
         Register existing CFD simulation data.
 
-        X: array [N_samples, N_parameters]
-        y: array [N_samples]
+        X: array
+            Set of parameters values to train the model (N_samples, N_parameters)
+
+        y: array
+            Set of objective values to train the model (N_samples)
         '''
 
         self.training_X = torch.tensor(X, dtype=torch.double)
@@ -67,7 +70,12 @@ class BayesianOptimizer:
     def update(self, X, y):
         '''
         Register new CFD simulation results.
-        """
+
+        X: array
+            Set of parameters values to train the model (N_samples, N_parameters)
+
+        y: array
+            Set of objective values to train the model (N_samples)
         '''
 
         X = torch.tensor(X, dtype=torch.double)
@@ -86,7 +94,7 @@ class BayesianOptimizer:
 
     def _fit_model(self):
         """
-        Internal function to fit the Gaussian Process regression Model according to the available [training_X, training_y] data.
+        Internal function to fit the Gaussian Process regression Model according to the available (training_X, training_y) data.
         """
 
         logger.info(f"Fitting GP with {self.training_X.shape[0]} samples...")
@@ -109,7 +117,7 @@ class BayesianOptimizer:
             Desired number of new set of parameters (matching the allocated number of CFD simulations available)
 
         Output: numpy array
-            Contains the new set of parameters, i.e, [N_CFDs, N_parameters]
+            Contains the new set of parameters, i.e, (N_CFDs, N_parameters)
         """
 
         if self.model is None:
@@ -140,8 +148,11 @@ class BayesianOptimizer:
         X : array
             N input points with shape (N, N_parameters).
 
-        Output : numpy array
+        Output 1: numpy array
             Predicted mean target values with shape (N,).
+
+        Output 2: numpy array
+            Standard deviation of the target values with shape (N,).
         """
 
         if self.model is None:
@@ -151,16 +162,46 @@ class BayesianOptimizer:
 
         posterior = self.model.posterior(X)
 
-        y_pred = posterior.mean.squeeze(-1)
-
-        return y_pred.detach().cpu().numpy()
+        mean = posterior.mean.squeeze(-1)
+        std = posterior.variance.sqrt().squeeze(-1)
+        
+        return (
+            mean.detach().cpu().numpy(),
+            std.detach().cpu().numpy()
+        )
 
 
     def get_best(self):
+        '''
+        Return the best observed objective and its correspondng parameters.
+
+        Output 1: numpy array
+            Parameters corresponding to the best observed value with shape (N_parameters,).
+
+        Output 2: float
+            Best observed objective value
+        '''
 
         index = torch.argmax(self.training_y)
 
         return (
             self.training_X[index].detach().cpu().numpy(),
             self.training_y[index].item(),
+        )
+
+
+    def get_dataset(self):
+        '''
+        Return the current training dataset containing N_samples.
+
+        Output 1: numpy array
+            Observed parameter values with shape (N_samples, N_parameters).
+
+        Output 2: numpy array
+            Observed objective values with shape (N_samples,).
+        '''
+
+        return (
+            self.training_X.detach().cpu().numpy(),
+            self.training_y.squeeze(-1).detach().cpu().numpy(),
         )

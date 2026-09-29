@@ -1,3 +1,7 @@
+import glob
+import shutil
+import numpy as np
+
 from smartsim import Experiment
 from smartsim.log import get_logger
 from smartsim.settings import MpirunSettings
@@ -22,15 +26,17 @@ class SOD2DLauncher:
         logger.info("Starting SmartSim...")
 
         if control_parameters is None:
-            control_parameters = [0.0, 0.0, 0.0]
+            control_parameters = np.zeros((N_CFDs, 3))
 
         # Store configuration
+        self.experiment_name = experiment_name
         self.sod_exe = sod_exe
         self.n_tasks_per_env = n_tasks_per_env
         self.sod_JSON = sod_JSON
         self.N_CFDs = N_CFDs
         self.control_parameters = control_parameters
         self.cwd = cwd
+        self.ensemble = None
 
         # List of launchers implemented/tested
         launchers = ["local", "slurm"]
@@ -41,13 +47,19 @@ class SOD2DLauncher:
         self.smartsim_experiment = Experiment(experiment_name, launcher=smartsim_launcher)
 
 
-    def _create_mpmd_ensemble(self):
+    def _generate_mpmd_settings(self):
+
+        if self.control_parameters.shape[0] != self.N_CFDs:
+            raise ValueError(f"Number of allocated CFD simulations ({self.N_CFDs}) "
+                             f"not equal to the number of parameter sets to evaluate "
+                             f"({self.control_parameters.shape[0]})")
+
 
         for i in range(self.N_CFDs):
 
             # Set execution arguments
-            control_parameters_str = ",".join(str(v) for v in self.control_parameters)
-            sod_args = {"N_control_parameters": len(self.control_parameters), "control_parameters": control_parameters_str}
+            control_parameters_str = ",".join(str(v) for v in self.control_parameters[i,:])
+            sod_args = {"N_control_parameters": self.control_parameters.shape[1], "control_parameters": control_parameters_str}
             exe_args = [self.sod_JSON, *[f"--{k}={v}" for k, v in sod_args.items()]]
 
             logger.info(f"Exe arguments: {exe_args}")
@@ -61,14 +73,39 @@ class SOD2DLauncher:
             else:
                 f_mpmd.make_mpmd(run)
 
+        return f_mpmd
+
+
+    def _create_mpmd_ensemble(self):
+        f_mpmd = self._generate_mpmd_settings()
+
         return self.smartsim_experiment.create_model("ensemble", f_mpmd, batch_settings=None, path=self.cwd)
+
+
+    def _stop_exp(self):
+
+        if self.smartsim_experiment:
+            # Stop ensembles
+            self.smartsim_experiment.stop(self.ensemble)
+
+            # Move ensemble log files to the "experiment_name" folder
+            for f in glob.glob("ensemble-*"):
+                shutil.move(f, f"{self.experiment_name}/")
 
 
     def start(self, block=True):
         # block=True keeps the Python process waiting until the simulations finish
 
         logger.info("Preparing ensemble of executions...")
-        ensemble = self._create_mpmd_ensemble()
+        if not self.ensemble:
+            self.ensemble = self._create_mpmd_ensemble()
+            logger.info(f"New ensamble created")
+        else:
+            self.ensemble.run_settings = self._generate_mpmd_settings()
+            logger.info(f"Updated ensamble args for SOD2D simulations")
 
         logger.info("Launching simulations...")
-        self.smartsim_experiment.start(ensemble, block=block)
+        self.smartsim_experiment.start(self.ensemble, block=block)
+        logger.info("Simulations finished")
+
+        self._stop_exp()

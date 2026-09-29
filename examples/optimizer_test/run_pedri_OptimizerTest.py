@@ -75,7 +75,7 @@ while converged==False:
     #print('New training Y: ', new_training_y)
 
     # Check convergence 
-    prediction_y = optimizer.predict(new_training_x) # Predict those points
+    prediction_y, _ = optimizer.predict(new_training_x) # Predict those points
     relative_error = np.abs((new_training_y - prediction_y) / new_training_y) # Real evaluation vs. model prediction
 
     max_error = np.max(relative_error)
