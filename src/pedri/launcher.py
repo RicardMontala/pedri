@@ -62,7 +62,7 @@ class SOD2DLauncher:
             sod_args = {"N_control_parameters": self.control_parameters.shape[1], "control_parameters": control_parameters_str}
             exe_args = [self.sod_JSON, *[f"--{k}={v}" for k, v in sod_args.items()]]
 
-            logger.info(f"Exe arguments: {exe_args}")
+            logger.debug(f"Exe arguments: {exe_args}")
 
             # Set smartsim execution settings
             run = MpirunSettings(exe=self.sod_exe, exe_args=exe_args,)

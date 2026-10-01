@@ -41,6 +41,9 @@ class SOD2DPostprocessor:
 
         Cl_avg = np.zeros(self.N_CFDs)
         Cd_avg = np.zeros(self.N_CFDs)
+        
+        Cl_std = np.zeros(self.N_CFDs)
+        Cd_std = np.zeros(self.N_CFDs)
 
         for i in range(self.N_CFDs):
 
@@ -68,4 +71,7 @@ class SOD2DPostprocessor:
             Cl_avg[i] = np.mean(Cl[time_mask])
             Cd_avg[i] = np.mean(Cd[time_mask])
 
-        return Cl_avg, Cd_avg
+            Cl_std[i] = np.std(Cl[time_mask])
+            Cd_std[i] = np.std(Cd[time_mask])
+
+        return Cl_avg, Cd_avg, Cl_std, Cd_std
