@@ -1,8 +1,8 @@
 import numpy as np
 import os
-from smartsim.log import get_logger
 
-logger = get_logger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 
 
 class SOD2DPostprocessor:

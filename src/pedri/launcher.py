@@ -3,11 +3,10 @@ import shutil
 import numpy as np
 
 from smartsim import Experiment
-from smartsim.log import get_logger
 from smartsim.settings import MpirunSettings
 
-
-logger = get_logger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 
 
 class SOD2DLauncher:

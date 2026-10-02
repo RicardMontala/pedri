@@ -6,7 +6,24 @@ build-backend = "setuptools.build_meta"
 name = "pedri"
 version = "0.1.0"
 dependencies = [
-    "smartsim"
+    "torch>=2.0.1",
+    "gpytorch>=1.14",
+    "linear_operator>=0.6",
+    "pyro-ppl>=1.8.4",
+    "numpy",
+    "scipy",
+    "multipledispatch",
+    "matplotlib",
+    "botorch",
+]
+
+[project.optional-dependencies]
+smartsim = [
+    "smartsim",
+]
+
+neuralfoil = [
+    "neuralfoil",
 ]
 
 [tool.setuptools.packages.find]

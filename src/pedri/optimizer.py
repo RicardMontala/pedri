@@ -1,7 +1,5 @@
 import torch
 
-from smartsim.log import get_logger
-
 # https://botorch.org/
 # https://github.com/meta-pytorch/botorch
 from botorch.models import SingleTaskGP
@@ -12,8 +10,8 @@ from botorch.optim import optimize_acqf
 
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
-
-logger = get_logger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 
 
 class BayesianOptimizer:

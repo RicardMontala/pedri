@@ -2,5 +2,17 @@ Metadata-Version: 2.4
 Name: pedri
 Version: 0.1.0
 License-File: LICENSE
-Requires-Dist: smartsim
+Requires-Dist: torch>=2.0.1
+Requires-Dist: gpytorch>=1.14
+Requires-Dist: linear_operator>=0.6
+Requires-Dist: pyro-ppl>=1.8.4
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: multipledispatch
+Requires-Dist: matplotlib
+Requires-Dist: botorch
+Provides-Extra: smartsim
+Requires-Dist: smartsim; extra == "smartsim"
+Provides-Extra: neuralfoil
+Requires-Dist: neuralfoil; extra == "neuralfoil"
 Dynamic: license-file

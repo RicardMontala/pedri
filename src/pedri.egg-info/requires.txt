@@ -1,1 +1,15 @@
+torch>=2.0.1
+gpytorch>=1.14
+linear_operator>=0.6
+pyro-ppl>=1.8.4
+numpy
+scipy
+multipledispatch
+matplotlib
+botorch
+
+[neuralfoil]
+neuralfoil
+
+[smartsim]
 smartsim
