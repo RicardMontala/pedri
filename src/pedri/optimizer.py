@@ -1,4 +1,6 @@
 import torch
+import numpy as np
+import os
 
 # https://botorch.org/
 # https://github.com/meta-pytorch/botorch
@@ -203,3 +205,66 @@ class BayesianOptimizer:
             self.training_X.detach().cpu().numpy(),
             self.training_y.squeeze(-1).detach().cpu().numpy(),
         )
+
+
+    def save_checkpoint(self, iteration, path='./', dump2csv=False):
+        '''
+        Save the current BO state, including the training dataset, parameter
+        bounds, and current iteration. The file is called checkpoint.pt.
+
+        iteration: int
+            Current BO iteration.
+
+        path: sting, optional
+            Direcotry where the checkpoint file will be stored.
+
+        dump2csv: bool, optional
+            If True, also save the training dataset to a CSV file.
+        '''
+
+        os.makedirs(path, exist_ok=True)
+
+        # Save in torch binary format (can be used later by "load_checkpoint()" routine)
+        checkpoint = {
+            "training_X": self.training_X,
+            "training_y": self.training_y,
+            "pbounds": self.pbounds,
+            "iteration": iteration,
+        }
+        torch.save(checkpoint, os.path.join(path, 'checkpoint.pt'))
+
+        # Save in CSV
+        if dump2csv:
+            X, y = self.get_dataset()
+            data = np.column_stack((X, y))
+
+            parameter_names = list(self.pbounds.keys())
+            header = parameter_names + ["objective"]
+
+            np.savetxt(os.path.join(path, 'checkpoint.csv'), data, delimiter=",", header=",".join(header))
+
+
+    @staticmethod
+    def load_checkpoint(path='./'):
+        '''
+        Load a BO checkpoint saved in checkpoint.pt file.
+
+        path: str, optional
+            Directory where the checkpoint file is stored.
+
+        output 1: class
+            Pedri bayesian optimizer initialized with the data stored in the checkpoint.
+
+        output 2: int
+            BO iteration at which the checkpoint was saved.
+        '''
+
+        checkpoint = torch.load(os.path.join(path, 'checkpoint.pt'), weights_only=False)
+
+        optimizer = BayesianOptimizer(checkpoint["pbounds"])
+        optimizer.initialize(checkpoint["training_X"], checkpoint["training_y"])
+
+        logger.info(f"Optimization restarted from iteration {checkpoint['iteration']}.")
+        logger.info(f"Continuing optimization...")
+
+        return optimizer, checkpoint["iteration"]

@@ -10,5 +10,6 @@ src/pedri.egg-info/SOURCES.txt
 src/pedri.egg-info/dependency_links.txt
 src/pedri.egg-info/requires.txt
 src/pedri.egg-info/top_level.txt
+src/pedri/utils/geom_check.py
 src/pedri/utils/geom_parametrization.py
 src/pedri/utils/plotting.py

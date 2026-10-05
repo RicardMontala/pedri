@@ -42,6 +42,10 @@ class SOD2DLauncher:
         if smartsim_launcher not in launchers:
             raise ValueError(f"Launcher type '{smartsim_launcher}' not implemented. Please use one of these: {launchers}")
 
+        # Suppress SmartSim messages
+        logging.getLogger("SmartSim").setLevel(logging.CRITICAL)
+        logging.getLogger("ensemble").setLevel(logging.CRITICAL)
+
         # Generate SmartSim experiment
         self.smartsim_experiment = Experiment(experiment_name, launcher=smartsim_launcher)
 
@@ -92,7 +96,7 @@ class SOD2DLauncher:
                 shutil.move(f, f"{self.experiment_name}/")
 
 
-    def start(self, block=True):
+    def execute(self, block=True):
         # block=True keeps the Python process waiting until the simulations finish
 
         logger.info("Preparing ensemble of executions...")
@@ -101,9 +105,9 @@ class SOD2DLauncher:
             logger.info(f"New ensamble created")
         else:
             self.ensemble.run_settings = self._generate_mpmd_settings()
-            logger.info(f"Updated ensamble args for SOD2D simulations")
+            logger.info(f"Ensamble args updated for SOD2D simulations")
 
-        logger.info("Launching simulations...")
+        logger.info("Running simulations...")
         self.smartsim_experiment.start(self.ensemble, block=block)
         logger.info("Simulations finished")
 
