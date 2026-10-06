@@ -4,6 +4,15 @@ import matplotlib.pyplot as plt
 from pedri.optimizer import BayesianOptimizer
 from pedri.utils.plotting import plot_convergence
 
+import logging
+import sys
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO, # Set logging verbosity: INFO / DEBUG / WARNING /ERROR
+    format='%(levelname)s - %(name)s - %(message)s',
+    stream=sys.stdout # stderr by default
+)
+
 
 # ------------ DEFINE FUNCTION TO OPTIMIZE -------------
 def branin(x):
@@ -66,15 +75,15 @@ while converged==False:
 
     # Current iteration being executed
     iteration = optimizer.get_iter()+1
-    print(f'\nITERATION {iteration}')
+    logger.info(f'\n\nITERATION {iteration}')
 
     # Suggest next points
     new_training_x = optimizer.suggest(N_Samples)
-    print('New training X selected')
+    logger.info('New training X selected')
 
     # Evaluate those points
     new_training_y = np.array([objective(x) for x in new_training_x])
-    print('New training y computed')
+    logger.info('New training y computed')
 
     # Update GP surrogate with the new points
     optimizer.update(new_training_x, new_training_y)
@@ -87,9 +96,9 @@ while converged==False:
 # ---------------------- PLOT RESULTS -------------------------------
 # Obtain best results
 X_best, y_best = optimizer.get_best()
-print('\nOBTAINED RESULTS: ')
-print(f'Local minima at [x1, x2]: {X_best}')
-print(f'Minima value f(x1,x2): {-y_best}')
+logger.info('\n\nOBTAINED RESULTS: ')
+logger.info(f'Local minima at [x1, x2]: {X_best}')
+logger.info(f'Minima value f(x1,x2): {-y_best}')
 
 # Plot
 num_evals=100

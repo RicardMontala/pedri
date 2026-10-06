@@ -1,8 +1,0 @@
-remove python/3.11.11
-remove hdf5/1.14.5
-remove nvhpc/24.3
-remove cmake/3.25.0
-load cmake/3.25.0
-load nvhpc/24.3
-load hdf5/1.14.5
-load python/3.11.11

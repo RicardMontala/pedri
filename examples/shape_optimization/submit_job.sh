@@ -2,7 +2,7 @@
 #SBATCH -J BO_PEDRI   	# Job name
 #SBATCH -p gpp_tuareg  	# Partition associated to your user
 #SBATCH --qos=gpp_std	# Queue to launch to
-#SBATCH --time=5:00:00
+#SBATCH --time=1:00:00
 #SBATCH -o out-%j.out   # STDOUT
 #SBATCH -e out-%j.err   # STDERR
 
@@ -13,7 +13,7 @@
 
 # Load modules
 module purge
-module load cmake nvhpc hdf5 python
+module load python
 
 unset PYTHONPATH
 source pedri-env/bin/activate
