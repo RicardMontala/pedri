@@ -1,0 +1,77 @@
+Tue Oct  6 11:38:43 AM UTC 2026
+INFO - __main__ - 
+Imposed bounds: {'Ax_0': (-0.1, 0.1), 'Ay_0': (-0.025, 0.025), 'Ax_1': (-0.1, 0.1), 'Ay_1': (-0.025, 0.025), 'Ax_2': [0, 0.1], 'Ay_2': (-0.025, 0.025), 'Ax_3': [0, 0.1], 'Ay_3': (-0.025, 0.025), 'Ax_4': (-0.1, 0.1), 'Ay_4': (-0.025, 0.025), 'Ax_5': (-0.1, 0.1), 'Ay_5': (-0.025, 0.025)}
+
+INFO - pedri.utils.geom_parametrization - MATCHING AIRFOIL CONVERGENCE
+INFO - pedri.utils.geom_parametrization - Optimization successful: True
+INFO - pedri.utils.geom_parametrization - Iterations: 134
+INFO - pedri.utils.geom_parametrization - Function evaluations: 1872
+INFO - pedri.utils.geom_parametrization - Final objective: 1.682230e-06
+INFO - __main__ - 
+Initial dataset created
+INFO - pedri.optimizer - Fitting GP with 100 samples...
+INFO - __main__ - 
+
+ITERATION 1
+INFO - __main__ - New training X selected
+INFO - __main__ - New training y computed
+INFO - pedri.optimizer - Fitting GP with 110 samples...
+INFO - pedri.optimizer - Best objective: 9.763138e-02. Relative change with previous best: 127.771%
+INFO - __main__ - 
+
+ITERATION 2
+INFO - __main__ - New training X selected
+INFO - __main__ - New training y computed
+INFO - pedri.optimizer - Fitting GP with 120 samples...
+INFO - pedri.optimizer - Best objective: 1.050078e-01. Relative change with previous best: 7.555%
+INFO - __main__ - 
+
+ITERATION 3
+INFO - __main__ - New training X selected
+INFO - __main__ - New training y computed
+INFO - pedri.optimizer - Fitting GP with 130 samples...
+INFO - pedri.optimizer - Best objective: 1.050078e-01. Relative change with previous best: 0.000%
+INFO - __main__ - 
+
+ITERATION 4
+INFO - __main__ - New training X selected
+INFO - __main__ - New training y computed
+INFO - pedri.optimizer - Fitting GP with 140 samples...
+INFO - pedri.optimizer - Best objective: 1.057228e-01. Relative change with previous best: 0.681%
+INFO - __main__ - 
+
+ITERATION 5
+INFO - __main__ - New training X selected
+INFO - __main__ - New training y computed
+INFO - pedri.optimizer - Fitting GP with 150 samples...
+INFO - pedri.optimizer - Best objective: 1.057228e-01. Relative change with previous best: 0.000%
+INFO - __main__ - 
+
+ITERATION 6
+INFO - __main__ - New training X selected
+INFO - __main__ - New training y computed
+INFO - pedri.optimizer - Fitting GP with 160 samples...
+INFO - pedri.optimizer - Best objective: 1.057228e-01. Relative change with previous best: 0.000%
+INFO - __main__ - 
+
+ITERATION 7
+INFO - __main__ - New training X selected
+INFO - __main__ - New training y computed
+INFO - pedri.optimizer - Fitting GP with 170 samples...
+INFO - pedri.optimizer - Best objective: 1.057228e-01. Relative change with previous best: 0.000%
+INFO - __main__ - 
+
+ITERATION 8
+INFO - __main__ - New training X selected
+INFO - __main__ - New training y computed
+INFO - pedri.optimizer - Fitting GP with 180 samples...
+INFO - pedri.optimizer - Best objective: 1.057228e-01. Relative change with previous best: 0.000%
+INFO - __main__ - 
+
+ITERATION 9
+INFO - __main__ - New training X selected
+INFO - __main__ - New training y computed
+INFO - pedri.optimizer - Fitting GP with 190 samples...
+INFO - pedri.optimizer - Best objective: 1.057228e-01. Relative change with previous best: 0.000%
+INFO - pedri.optimizer - CONVERGENCE CRITERIA REACHED!
+Tue Oct  6 11:42:25 AM UTC 2026

@@ -3,17 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_parameter_slice(optimizer, bounds, X,
-                         n_points=50, confidence=1.96, path='./', iter=None):
+def plot_parameter_slice(optimizer, X,
+                         n_points=50, confidence=1.96, path='./', include_iter=False):
     """
     Plot the GP prediction while varying one parameter and
     keeping all other parameters fixed at the values indicated in X.
 
     optimizer: pedri class
         Optimizer class used during the optimization.
-
-    bounds: dictionary {key: value}
-        Keys are the different parameters being optimized and value is an array containing the (min, max) values for the parameter.
 
     X: input array (N_params,)
         List containing the parameters where the slice will be performed.
@@ -29,11 +26,12 @@ def plot_parameter_slice(optimizer, bounds, X,
     path: sting, optional
         Path to the directory where the image will be saved.
 
-    iter: int, optional
-        Optimization iteration to append to the output filename.
+    iter: bool, optional
+        If True, the BO iteration is appended to the output filename.
     """
 
     # For each control parameter
+    bounds = optimizer.pbounds
     for i, (key, bound) in enumerate(bounds.items()):
     
             # Values of the parameter to sweep
@@ -69,12 +67,38 @@ def plot_parameter_slice(optimizer, bounds, X,
             plt.title(title)
     
             # Save figure
-            if iter is None:
+            if not include_iter:
                 filename = f'{key}_slice.png'
             else:
+                iter = optimizer.get_iter()
                 filename  = f'{key}_slice_iter{iter}.png'
 
             filename = os.path.join(path, filename )
 
             plt.savefig(filename, dpi=150)
             plt.close()
+
+
+def plot_convergence(optimizer, path='./',):
+        '''
+        Plot the maximum objective value at each iteration, as well as the
+        relative absolute change with respect to the previous iteration.
+        '''
+
+        
+        best_y_iterations = np.asarray(optimizer.best_history)
+
+        relative_change_iterations = (100 * np.abs(best_y_iterations[1:] - best_y_iterations[:-1])/ np.maximum(np.abs(best_y_iterations[:-1]), 1e-12))
+
+        iterations  = np.arange(len(best_y_iterations)) # position 0 is the initial dataset, while the remaining ones are the BO iterations (1,2,...)
+
+        fig, ax1 = plt.subplots()
+        ax1.plot(iterations, best_y_iterations, 'o-')
+        ax1.set_xlabel('BO iteration')
+        ax1.set_ylabel('Best objective value (-)')
+        ax2 = ax1.twinx()
+        ax2.plot(iterations[1:], relative_change_iterations,'s--')
+        ax2.set_ylabel('Relative change in % (--)')
+        fig.tight_layout()
+        fig.savefig(os.path.join(path,'convergence.png'), dpi=150)
+        plt.close(fig)

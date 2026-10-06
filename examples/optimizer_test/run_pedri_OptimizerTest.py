@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from pedri.optimizer import BayesianOptimizer
+from pedri.utils.plotting import plot_convergence
 
 
-# ------------------------------------------------------
-# Function to optimize
+# ------------ DEFINE FUNCTION TO OPTIMIZE -------------
 def branin(x):
     """
     Branin-Hoo function.
@@ -33,72 +33,65 @@ def objective(x):
     return -branin(x)
 
 
-# ------------------------------------------------------
-# Define Parameters
-bounds = {"x1": [-5.0, 10.0], "x2": [0.0, 15.0]}
-N_CFDs = 10
-convergence_error = 0.1 # Convergence relative error
+# --------------- PARAMETERS ----------------
+bounds = {"x1": [-5.0, 10.0], "x2": [0.0, 15.0]}    # Exploration bounds of the parameters
 
-# Initialize BO optimizer
-optimizer = BayesianOptimizer(bounds)
+N_Samples = 10              # Number of samples used to update the GP each time
+
+convergence_threshold = 0.1 # Minimum relative improvement between iterations (in %) defining the convergence threshold
+convergence_patience = 5    # Number of consecutive iterations below the threshold required for convergence
+max_iterations = 50         # Maximum number of BO iterations
+
+
+# -------------  CREATE INITIAL TRAINING DATASET -----------------
 
 # Initial evaluation
-training_x1 = np.random.uniform(bounds["x1"][0], bounds["x1"][1], N_CFDs)
-training_x2 = np.random.uniform(bounds["x2"][0], bounds["x2"][1], N_CFDs)
+training_x1 = np.random.uniform(bounds["x1"][0], bounds["x1"][1], N_Samples)
+training_x2 = np.random.uniform(bounds["x2"][0], bounds["x2"][1], N_Samples)
 
 training_y = np.array([objective([x1,x2]) for x1, x2 in zip(training_x1, training_x2)])
 
-#print('Initial dataset: ')
-#print(training_x1)
-#print(training_x2)
-#print(training_y)
-
-# Initial GP surrogate
+# Initialize BO optimizer
 training_x = np.array([training_x1, training_x2]).transpose()
-#print('Training X: ', training_x)
 
+optimizer = BayesianOptimizer(bounds, convergence_threshold=convergence_threshold,
+                              convergence_patience=convergence_patience, max_iterations=max_iterations)
 optimizer.initialize(training_x, training_y)
 
-# Optimization loop
+
+# --------------- OPTIMIZATION LOOP ------------------------
 converged = False
-iterations = 0
+
 while converged==False:
 
-    print(f'ITERATION {iterations}')
+    # Current iteration being executed
+    iteration = optimizer.get_iter()+1
+    print(f'\nITERATION {iteration}')
 
     # Suggest next points
-    new_training_x = optimizer.suggest(N_CFDs)
-    #print('New training X: ', new_training_x)
+    new_training_x = optimizer.suggest(N_Samples)
+    print('New training X selected')
 
     # Evaluate those points
     new_training_y = np.array([objective(x) for x in new_training_x])
-    #print('New training Y: ', new_training_y)
-
-    # Check convergence 
-    prediction_y, _ = optimizer.predict(new_training_x) # Predict those points
-    relative_error = np.abs((new_training_y - prediction_y) / new_training_y) # Real evaluation vs. model prediction
-
-    max_error = np.max(relative_error)
-
-    if max_error < convergence_error:
-        converged = True
+    print('New training y computed')
 
     # Update GP surrogate with the new points
     optimizer.update(new_training_x, new_training_y)
 
-    iterations += 1
+    # Check convergence
+    converged = optimizer.check_convergence()
+    plot_convergence(optimizer)
 
-print('CONVERGENCE ACHIEVED!')
 
+# ---------------------- PLOT RESULTS -------------------------------
 # Obtain best results
 X_best, y_best = optimizer.get_best()
-print('OBTAINED RESULTS: ')
+print('\nOBTAINED RESULTS: ')
 print(f'Local minima at [x1, x2]: {X_best}')
-print(f'Minima  value f(x1,x2): {-y_best}')
+print(f'Minima value f(x1,x2): {-y_best}')
 
-
-# ------------------------------------------------------
-# Analyse results
+# Plot
 num_evals=100
 X1_eval = np.linspace(bounds["x1"][0], bounds["x1"][1], num=num_evals)
 X2_eval = np.linspace(bounds["x2"][0], bounds["x2"][1], num=num_evals)

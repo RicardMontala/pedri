@@ -8,17 +8,20 @@ from pedri.utils.geom_parametrization import parametrize_airfoil
 from pedri.utils.geom_parametrization import bezier_airfoil
 from pedri.utils.geom_parametrization import transform_ctlpts
 from pedri.optimizer import BayesianOptimizer
+from pedri.utils.plotting import plot_convergence
 
 import neuralfoil as nf 
 
 import logging
+import sys
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,                 # Set logging verbosity: INFO / DEBUG / WARNING /ERROR
-    format='%(levelname)s - %(name)s - %(message)s'
+    format='%(levelname)s - %(name)s - %(message)s',
+    stream=sys.stdout # stderr by default
 )
 
-plt.rcParams.update({'font.size': 18}) # Matplotlib fornt size
+plt.rcParams.update({'font.size': 18}) # Matplotlib font size
 
 
 # ------------------------- PARAMETERS --------------------------------
@@ -34,8 +37,9 @@ N = Ncte_upper + Ncte_lower # Total number of control points to optimize
 Nini_samples = 100  # Number of samples of the initial dataset to start iterating
 N_batch = 10        # Number of new samples in each BO iteration
 
-convergence_error = 1   # Accepted relative error for convergence (in %)
-max_iterations = 20     # Maximum number of allowed iteration in the BO optimization
+convergence_threshold = 0.1 # Minimum relative improvement between iterations (in %) defining the convergence threshold
+convergence_patience = 5    # Number of consecutive iterations below the threshold required for convergence
+max_iterations = 20         # Maximum number of BO iterations
 
 nf_size = "medium"         # Neuralfoil model size: "xxsmall","xsmall","small","medium","large","xlarge","xxlarge","xxxlarge"
 
@@ -52,7 +56,7 @@ bounds = {key:value for key, value in zip(keys, values)}
 bounds[f'Ax_{Ncte_upper-1}'] = [0, bound_x] # Prevent the LE upper control point from moving upstream of the LE
 bounds[f'Ax_{Ncte_upper}']   = [0, bound_x] # Prevent the LE lower control point from moving upstream of the LE
 
-logger.info("Imposed bounds: %s", bounds)
+logger.info("\nImposed bounds: %s\n", bounds)
 
 # Define objective function during BO optimization
 def compute_objective(Cl, Cd, Cl_base=0.0, Cd_base=0.12, alpha=0.5):
@@ -128,26 +132,27 @@ for i in range(Nini_samples):
 fig.savefig('Initial_dataset.png', dpi=150)
 plt.close()
 
-logger.info("Initial dataset created")
-logger.info("Obtained Cl: %s", np.array2string(Cl, precision=2))
-logger.info("Obtained Cd: %s", np.array2string(Cd, precision=2))
+logger.info("\nInitial dataset created")
 
 # Initialize BO optimizer
 train_y = compute_objective(Cl, Cd)
-optimizer = BayesianOptimizer(bounds)
+optimizer = BayesianOptimizer(bounds, convergence_threshold=convergence_threshold,
+                              convergence_patience=convergence_patience, max_iterations=max_iterations)
 optimizer.initialize(train_X, train_y)
+
 
 # ------------------- OPTIMIZATION LOOP ---------------------
 converged = False
-iterations = 1
-error_iterations = []
+
 while converged==False:
 
-    logger.info(f'ITERATION {iterations}')
+    # Current iteration being executed
+    iteration = optimizer.get_iter()+1
+    logger.info(f'\n\nITERATION {iteration}')
 
     # Suggest next points
-    train_X = optimizer.suggest(N_batch)
-    logger.info(f'New training X: {train_X}')
+    new_train_X = optimizer.suggest(N_batch)
+    logger.info(f'New training X selected')
 
     # Evaluate those points
     Cl = np.zeros(N_batch)
@@ -156,7 +161,7 @@ while converged==False:
     for i in range(N_batch):
 
         # Create gemoetry
-        new_ctePte_flat = ctePte_flat + train_X[i]   # This is [x1, y1, x2, y2, ...]
+        new_ctePte_flat = ctePte_flat + new_train_X[i]   # This is [x1, y1, x2, y2, ...]
         new_ctePte = transform_ctlpts(new_ctePte_flat, Ncte_upper, Ncte_lower) # This is [[x1, y1], [x2, y2],...] + LE and TE
 
         airfoil_i = bezier_airfoil(xy_param[:,0], new_ctePte)
@@ -166,46 +171,24 @@ while converged==False:
         Cl[i] = aero['CL'][0]
         Cd[i] = aero['CD'][0]
 
-    train_y = compute_objective(Cl, Cd)
-    logger.info(f'New training y: {train_y}')
-
-    # Check convergence
-    prediction_y, _ = optimizer.predict(train_X)                        # Predict those points with the current model
-    relative_error = np.abs((train_y - prediction_y) / train_y)     # Real evaluation vs. model prediction
-
-    max_error = 100 * np.max(relative_error)    # Express the maximum error in %
-    error_iterations.append(max_error)          # Save relative error to plot it later
-    logger.info(f'Max error (%): {max_error}')
-
-    if (max_error < convergence_error) or (iterations > max_iterations):
-        converged = True
-
-    # Plot error during training
-    plt.figure()
-    plt.plot(range(0, len(error_iterations)), error_iterations, 'o-')
-    plt.xlabel('BO iteration')
-    plt.ylabel('Max relative error (%)')
-    plt.tight_layout()
-    plt.savefig('Convergence_error.png', dpi=150)
-    plt.close()
+    new_train_y = compute_objective(Cl, Cd)
+    logger.info(f'New training y computed')
 
     # Update GP surrogate with the new points
-    optimizer.update(train_X, train_y)
+    optimizer.update(new_train_X, new_train_y)
 
-    # Increase iteration counter
-    iterations += 1
+    # Check convergence
+    converged = optimizer.check_convergence()
+    plot_convergence(optimizer)
 
-logger.info('CONVERGENCE ACHIEVED!')
 
-
-# ------------------ PLOTS RESULTS -------------------
+# ------------------ PLOT RESULTS -------------------
 best_X, best_y = optimizer.get_best()
 
 new_ctePte_flat = ctePte_flat + best_X   # This is [x1, y1, x2, y2, ...]
 new_ctePte = transform_ctlpts(new_ctePte_flat, Ncte_upper, Ncte_lower) # This is [[x1, y1], [x2, y2],...] + LE and TE
 
 airfoil_opt = bezier_airfoil(xy_param[:,0], new_ctePte)
-
 
 plt.figure(figsize=(14,5))
 plt.plot(xy_param[:,0], xy_param[:,1], '--', color='gray', linewidth=2, label='original airfoil')

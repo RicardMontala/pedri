@@ -18,12 +18,21 @@ logger = logging.getLogger(__name__)
 
 class BayesianOptimizer:
 
-    def __init__(self, pbounds):
+    def __init__(self, pbounds, convergence_threshold=0.1, convergence_patience=5, max_iterations=50):
         '''
         pbounds: dict
             Dictionary with parameters names as keys and a tuple with minimum and maximum values.
             e.g. {'A_DC': [-1.0, 1.0], 'A':[0, 0.5], 'f':[0.1, 1.0]}
 
+        convergence_threshold: float, optional
+            Relative change threshold (%) used to determine convergence.
+        
+        convergence_patience: int, optional
+            Number of consecutive iterations below the convergence threshold
+            required to consider the optimization converged.
+
+        max_iterations: int, optional
+            Maximum number of BO iterations.
         '''
 
         self.pbounds = pbounds
@@ -49,6 +58,15 @@ class BayesianOptimizer:
         # Gaussian Process
         self.model = None
 
+        # Convergence parameters
+        self.convergence_threshold = convergence_threshold
+        self.convergence_patience = convergence_patience
+        self.max_iterations = max_iterations
+
+        # Convergence state
+        self.no_improvement_count = 0
+        self.best_history = []
+
 
     def initialize(self, X, y):
         '''
@@ -65,6 +83,9 @@ class BayesianOptimizer:
         self.training_y = torch.tensor(y, dtype=torch.double).reshape(-1, 1)
 
         self._fit_model()
+
+        # Update the best objective values list
+        self.best_history.append(self.get_best()[1])
 
 
     def update(self, X, y):
@@ -90,6 +111,9 @@ class BayesianOptimizer:
         self.training_y = torch.cat([self.training_y, y], dim=0)
 
         self._fit_model()
+
+        # Update the best objective values list
+        self.best_history.append(self.get_best()[1])
 
 
     def _fit_model(self):
@@ -207,16 +231,23 @@ class BayesianOptimizer:
         )
 
 
-    def save_checkpoint(self, iteration, path='./', dump2csv=False):
+    def get_iter(self):
+        '''
+        Return the current BO iteration count (int).
+        '''
+
+        # The first entry corresponds to the initial dataset, not a BO iteration.
+        # [initial, iter1, iter2, iter3, ...]
+        return len(self.best_history) - 1
+
+
+    def save_checkpoint(self, path='./', dump2csv=False):
         '''
         Save the current BO state, including the training dataset, parameter
         bounds, and current iteration. The file is called checkpoint.pt.
 
-        iteration: int
-            Current BO iteration.
-
         path: sting, optional
-            Direcotry where the checkpoint file will be stored.
+            Directory where the checkpoint file will be stored.
 
         dump2csv: bool, optional
             If True, also save the training dataset to a CSV file.
@@ -229,7 +260,11 @@ class BayesianOptimizer:
             "training_X": self.training_X,
             "training_y": self.training_y,
             "pbounds": self.pbounds,
-            "iteration": iteration,
+            "best_history": self.best_history,
+            "no_improvement_count": self.no_improvement_count,
+            "convergence_threshold": self.convergence_threshold,
+            "convergence_patience": self.convergence_patience,
+            "max_iterations": self.max_iterations,
         }
         torch.save(checkpoint, os.path.join(path, 'checkpoint.pt'))
 
@@ -259,12 +294,63 @@ class BayesianOptimizer:
             BO iteration at which the checkpoint was saved.
         '''
 
+        # Load the torch dictionary
         checkpoint = torch.load(os.path.join(path, 'checkpoint.pt'), weights_only=False)
 
-        optimizer = BayesianOptimizer(checkpoint["pbounds"])
-        optimizer.initialize(checkpoint["training_X"], checkpoint["training_y"])
+        # Retrieve the class
+        optimizer = BayesianOptimizer(
+            checkpoint["pbounds"],
+            convergence_threshold=checkpoint["convergence_threshold"],
+            convergence_patience=checkpoint["convergence_patience"],
+            max_iterations=checkpoint["max_iterations"],
+        )
 
-        logger.info(f"Optimization restarted from iteration {checkpoint['iteration']}.")
+        optimizer.training_X = checkpoint["training_X"]
+        optimizer.training_y = checkpoint["training_y"]
+
+        optimizer.best_history = checkpoint["best_history"]
+        optimizer.no_improvement_count = checkpoint["no_improvement_count"]
+
+        optimizer._fit_model()
+
+        logger.info(f"Optimization restarted from iteration {optimizer.get_iter()}.")
         logger.info(f"Continuing optimization...")
 
-        return optimizer, checkpoint["iteration"]
+        return optimizer
+
+
+    def check_convergence(self):
+        """
+        Check whether the BO optimization has converged.
+
+        output: bool
+            True if the convergence criterion has been reached.
+            This is fulfilled when the "relative_change" is maintained
+            below the "convergence_threshold" during more than "convergence_patience"
+            BO iterations.
+        """
+
+        if len(self.best_history) < 2:
+            logger.info("Convergence check skipped: no previous best available.")
+            return False
+
+        best_old = self.best_history[-2]
+        best_new = self.best_history[-1]
+        
+        relative_change = (100 * abs(best_old - best_new)/max(abs(best_old), 1e-12))
+        logger.info(f'Best objective: {best_new:.6e}. Relative change with previous best: {relative_change:.3f}%')
+
+        if relative_change < self.convergence_threshold:
+            self.no_improvement_count += 1
+        else:
+            self.no_improvement_count = 0
+
+        if self.no_improvement_count >= self.convergence_patience:
+            logger.info('CONVERGENCE CRITERIA REACHED!')
+            return True
+
+        if len(self.best_history)-1 >= self.max_iterations:   #-1 to not count the initialization
+            logger.info('MAXIMUM NUMBER OF ITERATIONS REACHED!')
+            return True
+
+        return False
