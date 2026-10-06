@@ -1,0 +1,4 @@
+load cmake/3.25.0
+load nvhpc/24.3
+load hdf5/1.14.5
+load python/3.11.11

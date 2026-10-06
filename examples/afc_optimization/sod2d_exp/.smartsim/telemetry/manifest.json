@@ -1,0 +1,519 @@
+{
+  "schema info": {
+    "schema_name": "entity manifest",
+    "version": "0.0.4"
+  },
+  "experiment": {
+    "name": "sod2d_exp",
+    "path": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp",
+    "launcher": "Slurm",
+    "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/logs/smartsim.out",
+    "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/logs/smartsim.err"
+  },
+  "runs": [
+    {
+      "run_id": "784b7d2",
+      "timestamp": 1791224467176454721,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=-0.04126488270363571,0.5870090204158583,0.41990607683490017"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/784b7d2/model/ensemble",
+            "step_id": null,
+            "task_id": "2491953",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/784b7d2/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/784b7d2/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "b6f46d4",
+      "timestamp": 1791230192440615377,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=-1.0,0.0,0.6029898414833802"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/b6f46d4/model/ensemble",
+            "step_id": null,
+            "task_id": "2500657",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/b6f46d4/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/b6f46d4/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "bde2a26",
+      "timestamp": 1791236235974166946,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=0.7423376013484179,0.924436920182184,0.7"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/bde2a26/model/ensemble",
+            "step_id": null,
+            "task_id": "2527572",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/bde2a26/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/bde2a26/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "076d2bd",
+      "timestamp": 1791242202293401434,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=1.0,0.0,0.4"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/076d2bd/model/ensemble",
+            "step_id": null,
+            "task_id": "2538751",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/076d2bd/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/076d2bd/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "e987833",
+      "timestamp": 1791248182991289887,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=0.8221998912211794,0.9014198613287846,0.44182471339379614"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/e987833/model/ensemble",
+            "step_id": null,
+            "task_id": "2552897",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/e987833/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/e987833/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "497b7e6",
+      "timestamp": 1791254344081260578,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=0.5987068244092828,1.0,0.462760288290441"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/497b7e6/model/ensemble",
+            "step_id": null,
+            "task_id": "2571915",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/497b7e6/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/497b7e6/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "cbff950",
+      "timestamp": 1791260356198127698,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=-0.6897282911723879,0.0,0.7"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/cbff950/model/ensemble",
+            "step_id": null,
+            "task_id": "2590149",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/cbff950/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/cbff950/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "43bf1f3",
+      "timestamp": 1791266092796214404,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=-0.37761157330468115,0.3262905157185399,0.48379612190559373"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/43bf1f3/model/ensemble",
+            "step_id": null,
+            "task_id": "2601561",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/43bf1f3/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/43bf1f3/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "736a0f6",
+      "timestamp": 1791271685779840561,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=-0.5483027212377604,0.0,0.5432998880950115"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/736a0f6/model/ensemble",
+            "step_id": null,
+            "task_id": "2618890",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/736a0f6/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/736a0f6/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "b9ae635",
+      "timestamp": 1791277493736536313,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=0.3291385698180945,0.43544846783364477,0.7"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/b9ae635/model/ensemble",
+            "step_id": null,
+            "task_id": "2641893",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/b9ae635/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/b9ae635/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "5c22914",
+      "timestamp": 1791283438763252180,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=0.015460114161819985,0.6346403464638771,0.4197049058497798"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/5c22914/model/ensemble",
+            "step_id": null,
+            "task_id": "2656794",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/5c22914/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/5c22914/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    },
+    {
+      "run_id": "d5637bc",
+      "timestamp": 1791289512964653385,
+      "model": [
+        {
+          "name": "ensemble",
+          "path": "/mnt/scratch2/ricard/Pedri_development",
+          "exe_args": [
+            "BluffBodySolverIncompAFC_pedri",
+            "--N_control_parameters=3",
+            "--control_parameters=-0.588319880879619,0.1079305911213909,0.6714202503649865"
+          ],
+          "run_settings": {
+            "exe": [
+              "/mnt/scratch2/ricard/Pedri_development/sod2d"
+            ],
+            "run_command": "/apps/nvhpc/24.3/Linux_x86_64/24.3/comm_libs/openmpi/openmpi-3.1.5/bin/mpirun",
+            "run_args": {
+              "n": 1
+            }
+          },
+          "batch_settings": {},
+          "params": {},
+          "files": {
+            "Symlink": [],
+            "Configure": [],
+            "Copy": []
+          },
+          "colocated_db": {},
+          "telemetry_metadata": {
+            "status_dir": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/d5637bc/model/ensemble",
+            "step_id": null,
+            "task_id": "2671770",
+            "managed": false
+          },
+          "out_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/d5637bc/model/ensemble/ensemble.out",
+          "err_file": "/mnt/scratch2/ricard/Pedri_development/sod2d_exp/.smartsim/telemetry/sod2d_exp/d5637bc/model/ensemble/ensemble.err"
+        }
+      ],
+      "orchestrator": [],
+      "ensemble": []
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+   "type":"BluffBodySolverIncompAFC_pedri",
+
+   "mesh_h5_file_path":"",
+   "mesh_h5_file_name":"mesh20_NACA",
+
+   "results_path":"",
+
+   "results_h5_file_name":"results",
+
+   "maxPhysTime":50,
+
+   "save_logFile_first":1,
+   "save_logFile_step":10,
+
+   "save_resultsFile_first":1,
+   "save_resultsFile_step":5000,
+
+   "save_restartFile_first":1,
+   "save_restartFile_step":10000,
+
+   "loadRestartFile":true,
+   "restartFile_to_load":2,
+
+   "saveAvgFile":true,
+   "loadAvgFile":false,
+   "initial_avgTime":20.0,
+
+   "saveSurfaceResults":false,
+
+   "flag_type_les":"none",
+
+   "maxIter":20,
+   "tol":1e-3,
+
+   "cfl_conv":0.5,
+
+   "v0":1.0,
+   "delta":1.0,
+   "rho0":1.0,
+   "Re":1000.0,
+   "aoa":20.0,
+
+   "fileControlName":"rectangleControl.txt",
+   "alphaActuation":0.0,
+   "timeBeginActuation":0.0,
+   "timeActuation_DC":10.0,
+   "flag_MassConservationStrategy":1,
+
+   "have_witness":false,
+   "witness_inp_file_name":"witness.txt",
+   "witness_h5_file_name":"resultwit.h5",
+   "leapwit":1,
+   "nwit":17986,
+   "wit_save_u_i":true,
+   "wit_save_pr":true,
+   "wit_save_rho":true,
+   "continue_witness":false,
+
+   "bouCodes":
+   [
+      {"id":2, "bc_type":"bc_type_far_field"},
+      {"id":3, "bc_type":"bc_type_outlet_incomp"},
+      {"id":1, "bc_type":"bc_type_unsteady_inlet"}
+   ],
+
+   "buffer":
+   [
+      {"type":"east","min":15,"size":0}
+   ]
+}
