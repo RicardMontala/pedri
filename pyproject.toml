@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pedri"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
     "torch>=2.0.1",
     "gpytorch>=1.14",
