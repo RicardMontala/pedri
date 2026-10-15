@@ -2,9 +2,7 @@ LICENSE
 README.md
 pyproject.toml
 src/pedri/__init__.py
-src/pedri/launcher.py
-src/pedri/optimizer.py
-src/pedri/postprocessor.py
+src/pedri/base_experiment.py
 src/pedri.egg-info/PKG-INFO
 src/pedri.egg-info/SOURCES.txt
 src/pedri.egg-info/dependency_links.txt
@@ -13,6 +11,10 @@ src/pedri.egg-info/top_level.txt
 src/pedri/optimizer/__init__.py
 src/pedri/optimizer/base_optimizer.py
 src/pedri/optimizer/bayesian_optimizer.py
+src/pedri/solver/__init__.py
+src/pedri/solver/base_solver.py
+src/pedri/solver/neuralfoil_solver.py
+src/pedri/solver/sod2d_solver.py
 src/pedri/utils/geom_check.py
 src/pedri/utils/geom_parametrization.py
 src/pedri/utils/plotting.py
