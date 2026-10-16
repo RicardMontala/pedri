@@ -2,11 +2,16 @@ from .base_solver import BaseSolver
 
 __all__ = [
     "BaseSolver",
+    "AnalyticalSolver",
     "NeuralFoilSolver",
     "SOD2DSolver",
 ]
 
 def __getattr__(name):
+    if name == "AnalyticalSolver":
+        from .analytical_solver import AnalyticalSolver
+        return AnalyticalSolver
+
     if name == "NeuralFoilSolver":
         from .neuralfoil_solver import NeuralFoilSolver
         return NeuralFoilSolver
