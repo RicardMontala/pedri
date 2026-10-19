@@ -3,6 +3,7 @@
 from .base_experiment import Experiment
 from .optimizer import BaseOptimizer, BayesianOptimizer
 from .solver import BaseSolver
+from .parametrization import BaseParametrization, BezierParametrization
 
 __all__ = [
     "Experiment",
@@ -11,6 +12,8 @@ __all__ = [
     "BaseSolver",
     "NeuralFoilSolver",
     "SOD2DSolver",
+    "BaseParametrization",
+    "BezierParametrization"
 ]
 
 def __getattr__(name):

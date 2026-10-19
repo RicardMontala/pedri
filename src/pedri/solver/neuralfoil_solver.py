@@ -5,6 +5,7 @@ import numpy as np
 import neuralfoil as nf
 
 from pedri.solver.base_solver import BaseSolver
+from pedri.parametrization import BaseParametrization
 
 
 class NeuralFoilSolver(BaseSolver):
@@ -14,7 +15,7 @@ class NeuralFoilSolver(BaseSolver):
 
     def __init__(
         self,
-        geom_transform_fn: Callable[[np.ndarray], np.ndarray],
+        geom_parametrization: BaseParametrization,
         reynolds: float = 1e4,
         aoa: float = 0.0,
         model_size: str = "medium",
@@ -36,7 +37,7 @@ class NeuralFoilSolver(BaseSolver):
         """
 
         super().__init__(objective_fn=objective_fn)
-        self.geom_transform_fn = geom_transform_fn
+        self.geom_patrametrization = geom_parametrization
         self.reynolds = reynolds
         self.aoa = aoa
         self.model_size = model_size
@@ -65,7 +66,7 @@ class NeuralFoilSolver(BaseSolver):
         cm = np.zeros(n_samples)
 
         for i in range(n_samples):
-            coords = self.geom_transform_fn(X[i])
+            coords = self.geom_patrametrization.generate_perturbed_geometry(X[i])
 
             aero = nf.get_aero_from_coordinates(
                 coordinates=coords,
