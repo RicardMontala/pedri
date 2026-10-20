@@ -9,7 +9,8 @@ from botorch.models import SingleTaskGP
 from botorch.models.transforms import Normalize, Standardize
 from botorch.fit import fit_gpytorch_mll
 from botorch.acquisition import qLogExpectedImprovement
-from botorch.optim import optimize_acqf
+from botorch.optim import (optimize_acqf,
+                           optimize_acqf_mixed_alternating,)
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from pedri.optimizer.base_optimizer import BaseOptimizer
@@ -25,6 +26,7 @@ class BayesianOptimizer(BaseOptimizer):
     def __init__(
         self,
         pbounds: dict[str, tuple[float, float]],
+        parameter_types: dict[str, str] | None = None,
         convergence_threshold: float = 0.1,
         convergence_patience: int = 5,
         max_iterations: int = 50,
@@ -33,6 +35,7 @@ class BayesianOptimizer(BaseOptimizer):
     ):
         super().__init__(
             pbounds=pbounds,
+            parameter_types=parameter_types,
             convergence_threshold=convergence_threshold,
             convergence_patience=convergence_patience,
             max_iterations=max_iterations,
@@ -54,6 +57,19 @@ class BayesianOptimizer(BaseOptimizer):
         )
 
         self.model: SingleTaskGP | None = None
+
+        # For 'discrete' parameters, construct candidate arrays
+        # e.g., {1: [0..9], 3: [2..3]} means that parameters 1 and 3
+        # are discrete with the corresponding candidate values
+        self.discrete_dims = {}
+        for idx, name in enumerate(self.parameter_names):
+            if self.parameter_types[name] == "discrete":
+                # Extract lower and upper bounds for this parameter
+                min_val = int(self.bounds[0, idx].item())
+                max_val = int(self.bounds[1, idx].item())
+                
+                # Map feature index -> list of allowed values
+                self.discrete_dims[idx] = list(range(min_val, max_val + 1))
 
 
     def _fit_model(self) -> None:
@@ -106,13 +122,26 @@ class BayesianOptimizer(BaseOptimizer):
             best_f=train_y_t.max(),
         )
 
-        candidates, acquisition_value = optimize_acqf(
-            acq_function=acquisition,
-            bounds=self.bounds,
-            q=n_samples,
-            num_restarts=10,
-            raw_samples=512,
-        )
+        if len(self.discrete_dims) == 0:
+            # All parameters are continuous
+            candidates, acquisition_value = optimize_acqf(
+                acq_function=acquisition,
+                bounds=self.bounds,
+                q=n_samples,
+                num_restarts=10,
+                raw_samples=512,
+            )
+
+        else:
+            # Mixed discrete/continuous parameters
+            candidates, acquisition_value = optimize_acqf_mixed_alternating(
+                acq_function=acquisition,
+                bounds=self.bounds,
+                discrete_dims=self.discrete_dims,
+                q=n_samples,
+                num_restarts=10,
+                raw_samples=512,
+            )
 
         return candidates.detach().cpu().numpy()
 

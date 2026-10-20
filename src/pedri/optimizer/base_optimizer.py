@@ -17,6 +17,7 @@ class BaseOptimizer(ABC):
     def __init__(
         self,
         pbounds: dict[str, tuple[float, float]],
+        parameter_types: dict[str, str] | None = None,
         convergence_threshold: float = 0.1,
         convergence_patience: int = 5,
         max_iterations: int = 50,
@@ -27,6 +28,11 @@ class BaseOptimizer(ABC):
         pbounds: dict
             Dictionary with parameter names as keys and (min, max) bounds as values.
             e.g. {'A_DC': [-1.0, 1.0], 'A':[0, 0.5], 'f':[0.1, 1.0]}
+        
+        parameter_types: dict
+            Dictionary with parameter names as keys and parameter type ('discrete' or
+            'continuous') as values. If not provided (None), it sets continuous to all.
+            e.g. {'A_DC': 'continuous', 'A': 'continuous', 'f': 'continuous'}
 
         convergence_threshold: float
             Relative change threshold (%) defining convergence.
@@ -39,10 +45,25 @@ class BaseOptimizer(ABC):
         """
 
         self.pbounds = pbounds
+        self.parameter_names = list(pbounds)
         self.n_parameters = len(pbounds)
+
         self.convergence_threshold = convergence_threshold
         self.convergence_patience = convergence_patience
         self.max_iterations = max_iterations
+
+        # Manage parameter_types dictionary
+        if parameter_types is None:
+            parameter_types = {name: "continuous" for name in self.parameter_names}
+
+        if set(parameter_types) != set(self.parameter_names):
+            raise ValueError("parameter_types must contain exactly the same keys as pbounds.")
+
+        valid_types = {"continuous", "discrete"}
+        if not set(parameter_types.values()).issubset(valid_types):
+            raise ValueError("parameter_types must be 'continuous' or 'discrete'.")
+
+        self.parameter_types = parameter_types
 
         # Training dataset storage (stored as numpy arrays at base level)
         self.training_X: np.ndarray | None = None
