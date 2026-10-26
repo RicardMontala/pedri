@@ -179,3 +179,31 @@ class BayesianOptimizer(BaseOptimizer):
             mean.detach().cpu().numpy(),
             std.detach().cpu().numpy(),
         )
+
+
+    def _get_extra_state(self) -> dict:
+        """
+        Return specific properties specific from this optimizer
+        in order to "save_checkpoint" correctly.
+        """
+        
+        return {"dtype": self.dtype,"device": str(self.device)}
+
+
+    @classmethod
+    def _build_from_checkpoint(cls, checkpoint: dict) -> "BayesianOptimizer":
+        """
+        Provide the specific class constructor for this optimizer so that
+        the class can be properly restored when "load_checkpoint".
+        """
+
+        extra = checkpoint.get("extra_state", {})
+        return cls(
+            pbounds=checkpoint["pbounds"],
+            parameter_types=checkpoint["parameter_types"],
+            convergence_threshold=checkpoint["convergence_threshold"],
+            convergence_patience=checkpoint["convergence_patience"],
+            max_iterations=checkpoint["max_iterations"],
+            dtype=extra.get("dtype", torch.double),
+            device=extra.get("device", "cpu"),
+        )

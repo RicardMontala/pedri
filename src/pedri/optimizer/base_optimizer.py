@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 import os
+import dill
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -126,6 +127,31 @@ class BaseOptimizer(ABC):
         """
 
         raise NotImplementedError(f"{self.__class__.__name__} does not support predictions.")
+
+
+    def _get_extra_state(self) -> dict:
+        """
+        Function called inside "save_checkpoint".
+        Override to return an optimizer-specific state dictionary.
+        """
+
+        return {}
+
+
+    @classmethod
+    def _build_from_checkpoint(cls, checkpoint: dict) -> "BaseOptimizer":
+        """
+        Factory method to construct the instance during load_checkpoint.
+        Include all the parameters required to initialize the desired optimizer class.
+        """
+
+        return cls(
+            pbounds=checkpoint["pbounds"],
+            parameter_types=checkpoint["parameter_types"],
+            convergence_threshold=checkpoint["convergence_threshold"],
+            convergence_patience=checkpoint["convergence_patience"],
+            max_iterations=checkpoint["max_iterations"],
+        )
 
 
     # ------------------------------------------------------------------
@@ -274,8 +300,8 @@ class BaseOptimizer(ABC):
     # Checkpointing
     # ------------------------------------------------------------------
     def save_checkpoint(self, path: str = "./", dump2csv: bool = False) -> None:
-        """Save optimizer state using NumPy formatting, including the training dataset,
-        parameter bounds, and current iteration. The file is called checkpoint.pt.
+        """
+        Save optimizer state using dill formatting. The file is called checkpoint.dill.
         
         Parameters
         ----------
@@ -283,14 +309,14 @@ class BaseOptimizer(ABC):
             Directory where the checkpoint file will be stored.
 
         dump2csv: bool, optional
-            If True, also save the training dataset to a CSV file.        
-
+            If True, also save the training dataset to a CSV file.
         """
 
         os.makedirs(path, exist_ok=True)
         checkpoint_data = {
             "class_name": self.__class__.__name__,
             "pbounds": self.pbounds,
+            "parameter_types": self.parameter_types,
             "training_X": self.training_X,
             "training_y": self.training_y,
             "best_history": self.best_history,
@@ -298,8 +324,12 @@ class BaseOptimizer(ABC):
             "convergence_threshold": self.convergence_threshold,
             "convergence_patience": self.convergence_patience,
             "max_iterations": self.max_iterations,
+            "extra_state": self._get_extra_state(),
         }
-        np.save(os.path.join(path, "checkpoint.npy"), checkpoint_data)
+        
+        dill_path = os.path.join(path, "checkpoint.dill")
+        with open(dill_path, "wb") as f:
+            dill.dump(checkpoint_data, f)
 
         if dump2csv and self.training_X is not None:
             X, y = self.get_dataset()
@@ -327,27 +357,23 @@ class BaseOptimizer(ABC):
             Directory where the checkpoint file is stored.
         """
 
-        npy_path = os.path.join(path, "checkpoint.npy")
-        if not os.path.exists(npy_path):
-            raise FileNotFoundError(f"No checkpoint file found at {npy_path}")
+        dill_path = os.path.join(path, "checkpoint.dill")
+        if not os.path.exists(dill_path):
+            raise FileNotFoundError(f"No checkpoint file found at {dill_path}")
 
-        # Load dictionary object from .npy file
-        checkpoint = np.load(npy_path, allow_pickle=True).item()
+        # Load state file
+        with open(dill_path, "rb") as f:
+            checkpoint = dill.load(f)
 
-        # Target class resolution
-        target_class_name = checkpoint.get("class_name", "BayesianOptimizer")
+        # Resolve correct subclass dynamically
+        target_class_name = checkpoint.get("class_name")
         subclasses = {sub.__name__: sub for sub in cls.__subclasses__()}
         target_cls = subclasses.get(target_class_name, cls)
 
-        # Instantiate concrete subclass
-        optimizer = target_cls(
-            pbounds=checkpoint["pbounds"],
-            convergence_threshold=checkpoint["convergence_threshold"],
-            convergence_patience=checkpoint["convergence_patience"],
-            max_iterations=checkpoint["max_iterations"],
-        )
+        # Instantiate concrete subclass using its factory method
+        optimizer = target_cls._build_from_checkpoint(checkpoint)
 
-        # Restore state
+        # Restore common state
         optimizer.training_X = checkpoint["training_X"]
         optimizer.training_y = checkpoint["training_y"]
         optimizer.best_history = checkpoint["best_history"]
