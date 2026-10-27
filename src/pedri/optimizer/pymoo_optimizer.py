@@ -9,6 +9,7 @@ from pymoo.core.population import Population
 from pymoo.problems.static import StaticProblem
 from pymoo.core.termination import NoTermination
 from pymoo.core.algorithm import Algorithm
+from pymoo.core.repair import Repair
 
 from pedri.optimizer.base_optimizer import BaseOptimizer
 
@@ -51,6 +52,37 @@ def _load_algorithm_class(alg_key: str) -> type:
         raise ImportError(f"Failed to load '{class_name}' from '{module_path}'.") from err
 
 
+class ParameterTypeRepair(Repair):
+    """
+    Selective repair operator that rounds designated continuous variables to nearest integers
+    when "discrete" parameters are defined.
+
+    Imitates pymoo's native RoundingRepair, applied per-column based on parameter types:
+    https://github.com/anyoptimization/pymoo/blob/main/pymoo/operators/repair/rounding.py
+    """
+    def __init__(self, parameter_names: list[str], parameter_types: dict[str, str],**kwargs) -> None:
+        super().__init__(**kwargs)
+        self.parameter_names = parameter_names
+        self.parameter_types = parameter_types
+
+        # Pre-compute integer column indices for fast vectorized rounding
+        self.discrete_indices = np.array([
+            i for i, name in enumerate(parameter_names)
+            if parameter_types[name] == "discrete"
+        ], dtype=int)
+
+    # This is called after the creation of each new population if this Repair operator is provided
+    def _do(self, problem, Z, **kwargs):
+        # Extract X (handles both Population container and raw 2D array)
+        X = Z.get("X") if hasattr(Z, "get") else Z
+
+        # Vectorized rounding across all integer columns simultaneously
+        if len(self.discrete_indices) > 0:
+            X[:, self.discrete_indices] = np.around(X[:, self.discrete_indices])
+
+        return Z
+
+
 class PymooOptimizer(BaseOptimizer):
     """
     Generic adapter for single-objective pymoo algorithms.
@@ -85,6 +117,15 @@ class PymooOptimizer(BaseOptimizer):
             max_iterations=max_iterations,
         )
 
+        self.seed = seed
+
+        # Automatically inject Repair operator if any integer parameters are present
+        if "discrete" in self.parameter_types.values() and "repair" not in algorithm_kwargs:
+            algorithm_kwargs["repair"] = ParameterTypeRepair(
+                parameter_names=self.parameter_names,
+                parameter_types=self.parameter_types,
+            )
+
         # Dynamically import class from registry if string, otherwise use the provided pymoo class (useful for checkpoint restart)
         if isinstance(algorithm, str):
             alg_key = algorithm.lower().strip()
@@ -92,8 +133,6 @@ class PymooOptimizer(BaseOptimizer):
             self.algorithm = algorithm_cls(**algorithm_kwargs)
         else:
             self.algorithm = algorithm
-
-        self.seed = seed
 
         # Configure pymoo problem
         self.problem = Problem(
