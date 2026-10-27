@@ -1,3 +1,4 @@
+import importlib
 import logging
 import numpy as np
 
@@ -7,10 +8,47 @@ from pymoo.core.evaluator import Evaluator
 from pymoo.core.population import Population
 from pymoo.problems.static import StaticProblem
 from pymoo.core.termination import NoTermination
+from pymoo.core.algorithm import Algorithm
 
 from pedri.optimizer.base_optimizer import BaseOptimizer
 
 logger = logging.getLogger(__name__)
+
+
+# Already tested classes from pymoo: https://pymoo.org/algorithms/list.html
+# Strict mapping: "alias": ("module.path", "ClassName")
+ALGORITHM_REGISTRY = {
+    # Single-objective algorithms (soo.nonconvex)
+    "ga": ("pymoo.algorithms.soo.nonconvex.ga", "GA"),
+    "de": ("pymoo.algorithms.soo.nonconvex.de", "DE"),
+    "pso": ("pymoo.algorithms.soo.nonconvex.pso", "PSO"),
+    "brkga": ("pymoo.algorithms.soo.nonconvex.brkga", "BRKGA"),
+    #"nelder": ("pymoo.algorithms.soo.nonconvex.nelder", "NelderMead"),
+    #"pattern": ("pymoo.algorithms.soo.nonconvex.pattern", "PatternSearch"),
+    "cmaes": ("pymoo.algorithms.soo.nonconvex.cmaes", "CMAES"),
+    "es": ("pymoo.algorithms.soo.nonconvex.es", "ES"),
+
+    # Multi-objective algorithms (moo)
+}
+
+
+def _load_algorithm_class(alg_key: str) -> type:
+    """
+    Dynamically imports and returns the algorithm class from the registry.
+    """
+
+    if alg_key not in ALGORITHM_REGISTRY:
+        raise ValueError(f"Unsupported algorithm '{alg_key}'. Available options are: {list(ALGORITHM_REGISTRY.keys())}")
+
+    module_path, class_name = ALGORITHM_REGISTRY[alg_key]
+    
+    try:
+        mod = importlib.import_module(module_path)
+        logger.info(f"{class_name} algorithm from pymoo selected.")
+        return getattr(mod, class_name)
+
+    except (ImportError, AttributeError) as err:
+        raise ImportError(f"Failed to load '{class_name}' from '{module_path}'.") from err
 
 
 class PymooOptimizer(BaseOptimizer):
@@ -31,12 +69,13 @@ class PymooOptimizer(BaseOptimizer):
     def __init__(
         self,
         pbounds: dict[str, tuple[float, float]],
-        algorithm,
+        algorithm: str | Algorithm,
         parameter_types: dict[str, str] | None = None,
         convergence_threshold: float = 0.1,
         convergence_patience: int = 5,
         max_iterations: int = 50,
         seed: int | None = None,
+        **algorithm_kwargs,             # Provide specific kwargs for the desired pymoo algorithm to use
     ):
         super().__init__(
             pbounds=pbounds,
@@ -46,9 +85,17 @@ class PymooOptimizer(BaseOptimizer):
             max_iterations=max_iterations,
         )
 
-        self.algorithm = algorithm
+        # Dynamically import class from registry if string, otherwise use the provided pymoo class (useful for checkpoint restart)
+        if isinstance(algorithm, str):
+            alg_key = algorithm.lower().strip()
+            algorithm_cls = _load_algorithm_class(alg_key)
+            self.algorithm = algorithm_cls(**algorithm_kwargs)
+        else:
+            self.algorithm = algorithm
+
         self.seed = seed
 
+        # Configure pymoo problem
         self.problem = Problem(
             n_var=self.n_parameters,
             n_obj=1,
@@ -80,9 +127,7 @@ class PymooOptimizer(BaseOptimizer):
         """Request the next population of candidates from pymoo."""
 
         if self._current_pop is not None:
-            raise RuntimeError(
-                "Pending candidates must be evaluated with update() first."
-            )
+            raise RuntimeError("Pending candidates must be evaluated with update() first.")
 
         population = self.algorithm.ask()
 
@@ -94,7 +139,7 @@ class PymooOptimizer(BaseOptimizer):
         if n_samples is not None and len(X) != n_samples:
             logger.warning(
                 "Pymoo returned %d candidates instead of the requested %d. "
-                "The algorithm controls its population size.",
+                "Check if this is the intended behavior.",
                 len(X),
                 n_samples,
             )
@@ -103,50 +148,39 @@ class PymooOptimizer(BaseOptimizer):
         return X.copy()
 
 
-    def update(self, X: np.ndarray, y: np.ndarray) -> None:
-        """Submit solver evaluations and advance the pymoo algorithm."""
+    def _on_initialize(self, X: np.ndarray, y: np.ndarray) -> None:
+        """
+        Ingest custom initial population / warm-start data into pymoo.
+        """
+
+        pop = Population.new("X", X)
+        static_problem = StaticProblem(self.problem, F=(-y).reshape(-1, 1))
+        Evaluator().eval(static_problem, pop)
+        self.algorithm.tell(infills=pop)
+
+
+    def _on_update(self, X: np.ndarray, y: np.ndarray) -> None:
+        """
+        Ingest newly evaluated candidates into pymoo and advance state.
+        """
 
         if self._current_pop is None:
             raise RuntimeError("Call suggest() before update().")
 
-        X = np.asarray(X, dtype=float)
-        y = np.asarray(y, dtype=float).reshape(-1)
-
         expected_X = np.asarray(self._current_pop.get("X"), dtype=float)
 
         if X.shape != expected_X.shape or not np.allclose(X, expected_X):
-            raise ValueError(
-                "X must contain the candidates returned by the latest suggest()."
-            )
+            raise ValueError("X must contain the candidates returned by the latest suggest().")
 
-        if y.shape[0] != len(expected_X):
-            raise ValueError("One objective value is required per candidate.")
+        if len(y) != len(expected_X):
+            raise ValueError(f"Expected {len(expected_X)} evaluations, received {len(y)}.")
 
-        if not np.all(np.isfinite(y)):
-            raise ValueError("Objective values must be finite.")
-
-        # Keep PEDRI's objective convention: maximize y.
-        if self.training_X is None:
-            self.training_X = X.copy()
-            self.training_y = y.reshape(-1, 1)
-        else:
-            self.training_X = np.vstack([self.training_X, X])
-            self.training_y = np.vstack(
-                [self.training_y, y.reshape(-1, 1)]
-            )
-
-        # Pymoo minimizes, so negate the objective.
-        static_problem = StaticProblem(
-            self.problem,
-            F=(-y).reshape(-1, 1),
-        )
-
+        # Pymoo minimizes, so negate the objective
+        static_problem = StaticProblem(self.problem, F=(-y).reshape(-1, 1))
         Evaluator().eval(static_problem, self._current_pop)
+
         self.algorithm.tell(infills=self._current_pop)
         self._current_pop = None
-
-        self.best_history.append(self.get_best()[1])
-        self._fit_model()
 
 
     def _get_extra_state(self) -> dict:

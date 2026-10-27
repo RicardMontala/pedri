@@ -79,15 +79,6 @@ class BaseOptimizer(ABC):
     # Abstract Methods that must be implemented by the subclasses
     # ------------------------------------------------------------------
     @abstractmethod
-    def _fit_model(self) -> None:
-        """
-        Internal routine to train/refit the underlying surrogate model.
-        """
-
-        pass
-
-
-    @abstractmethod
     def suggest(self, n_samples: int) -> np.ndarray:
         """
         Suggest the next batch of parameter candidates to evaluate.
@@ -106,27 +97,29 @@ class BaseOptimizer(ABC):
         pass
 
 
-    def predict(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def _fit_model(self) -> None:
         """
-        Predict model target values and uncertainties for input candidates.
-
-        Override this method only for optimizers that support surrogate predictions.
-        
-        Parameters
-        ----------
-        X: np.ndarray
-           N evaluation points of shape (N, n_parameters).
-
-        Returns
-        -------
-        mean: np.ndarray
-            Predicted target values of shape (N,).
-        
-        std: np.ndarray
-            Predicted uncertainties (standard deviations) of shape (N,).
+        Internal routine to train/refit the underlying surrogate model.
+        Override only in model-based subclasses (e.g., Bayesian Optimization).
         """
 
-        raise NotImplementedError(f"{self.__class__.__name__} does not support predictions.")
+        pass
+
+
+    def _on_initialize(self, X: np.ndarray, y: np.ndarray) -> None:
+        """
+        Hook called during initialize() for algorithm-specific state updates.
+        """
+
+        pass
+
+
+    def _on_update(self, X: np.ndarray, y: np.ndarray) -> None:
+        """
+        Hook called during update() for algorithm-specific state updates.
+        """
+
+        pass
 
 
     def _get_extra_state(self) -> dict:
@@ -173,6 +166,7 @@ class BaseOptimizer(ABC):
         self.training_X = np.asarray(X, dtype=np.float64)
         self.training_y = np.asarray(y, dtype=np.float64).reshape(-1, 1)
 
+        self._on_initialize(self.training_X, self.training_y.reshape(-1))
         self._fit_model()
         self.best_history.append(self.get_best()[1])
 
@@ -200,6 +194,7 @@ class BaseOptimizer(ABC):
         self.training_X = np.vstack([self.training_X, X_arr])
         self.training_y = np.vstack([self.training_y, y_arr])
 
+        self._on_update(X_arr, y_arr.reshape(-1))
         self._fit_model()
         self.best_history.append(self.get_best()[1])
 

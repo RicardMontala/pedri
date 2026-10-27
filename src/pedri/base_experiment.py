@@ -25,6 +25,7 @@ class Experiment:
         checkpoint_dir: str = "./checkpoints",
         save_checkpoint_step: int = 1,
         on_iteration_end: Callable[["Experiment"], None] | None = None,
+        seed: int | None = None,
     ):
         """
         Parameters
@@ -43,6 +44,8 @@ class Experiment:
             Frequency (in iterations) at which checkpoints are saved.
         on_iteration_end: Callable, optional
             Callback hook executed at the end of every iteration (e.g., for plotting).
+        seed: int, optional
+            Fix the desired seed when generating initial samples (ensure reproducibility across runs).
         """
         self.optimizer = optimizer
         self.solver = solver
@@ -51,12 +54,13 @@ class Experiment:
         self.checkpoint_dir = checkpoint_dir
         self.save_checkpoint_step = save_checkpoint_step
         self.on_iteration_end = on_iteration_end
+        self.seed = seed
 
         # Internal history of raw solver outputs (Cl, Cd, etc.)
         self.history_metrics: list[dict[str, np.ndarray]] = []
 
 
-    def generate_initial_samples(self, n_samples: int, seed: int | None = None) -> np.ndarray:
+    def generate_initial_samples(self, n_samples: int) -> np.ndarray:
         """
         Generate parameter candidates across bounds using Latin Hypercube Sampling (LHS)
         (good coverage of the parameter space).
@@ -76,7 +80,7 @@ class Experiment:
         """
 
         pbounds = self.optimizer.pbounds
-        sampler = qmc.LatinHypercube(d=len(pbounds), seed=seed)
+        sampler = qmc.LatinHypercube(d=len(pbounds), seed=self.seed)
         samples = sampler.random(n=n_samples)
 
         bounds_min = np.array([b[0] for b in pbounds.values()])
@@ -125,7 +129,7 @@ class Experiment:
 
         # 1. Suggest candidate parameters
         new_X = self.optimizer.suggest(self.batch_size)
-        logger.info(f"Suggested {self.batch_size} candidate points.")
+        logger.info(f"Suggested {len(new_X)} candidate points.")
 
         # 2. Evaluate with solver
         new_y, metrics = self.solver.evaluate(new_X)
